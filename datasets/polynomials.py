@@ -21,7 +21,7 @@ class Polynomial:
             elif self.dim > 1 and self.order == 1:
                 mean = 0
                 self.coefficients.append(random.gauss(mean, 16))  # constant
-                for i in range(self.dim + 1):
+                for i in range(self.dim):
                     self.coefficients.append(random.gauss(mean, 4))  # first order terms
             elif self.dim > 1 and self.order == 2:
                 self.coefficients.append(random.gauss(0, 16))  # constant
@@ -40,12 +40,9 @@ class Polynomial:
         x = np.empty((num_points, self.dim)) if self.dim > 1 else np.empty(num_points)
         y = np.empty(num_points)
 
-        if not isinstance(x_dev, (list, tuple, np.ndarray)):
-            x_dev = [x_dev] * self.dim
-
         for i in range(num_points):
-            x[i] = random.gauss(0, x_dev[0]) if self.dim == 1 \
-                else np.array([random.gauss(0, x_dev[j]) for j in range(self.dim)])
+            x[i] = random.gauss(0, x_dev) if self.dim == 1 \
+                else np.random.normal(loc=0, scale=x_dev, size=self.dim)
 
             noise = random.gauss(bias, y_dev)
             if self.dim == 1:
@@ -57,7 +54,7 @@ class Polynomial:
                 index = self.dim + 1
                 for a in range(self.dim):
                     for b in range(a, self.dim):
-                        y[i] += x[i][a] * self.coefficients[index]
+                        y[i] += x[i][a] * x[i][b] * self.coefficients[index]
                         index += 1
 
         return x, y

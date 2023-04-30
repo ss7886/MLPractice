@@ -12,9 +12,8 @@ class LinearRegression:
             self.basis_functions = []
             self.string = []
             if input_dim == 1:
-                self.basis_functions = [None] * (order + 1)
                 for i in range(order + 1):
-                    self.basis_functions[i] = lambda x, exp=i: x ** exp
+                    self.basis_functions.append(lambda x, exp=i: x ** exp)
                     self.string.append("" if i == 0 else "x" if i == 1 else f"x^{i}")
             else:
                 if order == 1:
@@ -24,6 +23,9 @@ class LinearRegression:
                         self.string.append(f"x_{i + 1}")
                 elif order == 2:
                     self.basis_functions.append(lambda x: 1)
+                    for i in range(self.input_dim):
+                        self.basis_functions.append(lambda x, idx=i: x[idx])
+                        self.string.append(f"x_{i + 1}")
                     for i in range(self.input_dim):
                         for j in range(i, self.input_dim):
                             self.basis_functions.append(lambda x, idx1=i, idx2=j: x[idx1] * x[idx2])
@@ -41,13 +43,16 @@ class LinearRegression:
 
     def train(self, x, y):
         assert len(x) == len(y)
+        if self.input_dim > 1:
+            assert x.shape[1] == self.input_dim
+        else:
+            assert x.ndim == 1
         phi = self._phi(x)
-        try:
-            inv = np.linalg.inv(phi.T @ phi)
-        except LinAlgError:
+
+        if phi.shape[1] > phi.shape[0]:
             raise Exception("Overparametrized! (not enough datapoints)")
 
-        theta = inv @ phi.T @ y
+        theta = np.linalg.solve(phi.T @ phi, phi.T @ y)
         loss = 0.5 * np.linalg.norm(phi @ theta - y) ** 2
 
         return theta, loss
