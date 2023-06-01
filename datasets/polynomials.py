@@ -16,7 +16,7 @@ class Polynomial:
             if self.dim == 1:
                 for i in range(self.order + 1):
                     mean = 0
-                    dev = 16 * 4 ** (-i)
+                    dev = 10 * 6 ** (-i)
                     self.coefficients.append(random.gauss(mean, dev))
             elif self.dim > 1 and self.order == 1:
                 mean = 0
