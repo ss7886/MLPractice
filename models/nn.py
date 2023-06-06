@@ -84,16 +84,15 @@ class NeuralNetwork:
         diff_layers = [self.weights[i + 1] @ activations[i] for i in range(layers)]
 
         for i in range(1, layers):
-            diff_layers[layers - i - 1] = diff_layers[layers - i - 1] @ diff_layers[layers - i]
+            diff_layers[layers - i - 1] = diff_layers[layers - i] @ diff_layers[layers - i - 1]
 
         for i in range(1, layers):
-            d_weights.append(diff_layers[-i].T @ outputs[-i].T)
+            d_weights.append(diff_layers[-i].T @ outputs[-i - 1].reshape(1, self.layer_sizes[-i - 1]))
             assert np.shape(d_weights[-1]) == np.shape(self.weights[-i - 1])
             d_biases.append(diff_layers[-i])
             d_biases[-1] = d_biases[-1].reshape(self.layer_sizes[-i])
 
-        d_weights.append(diff_layers[0].T @ x.T)
-        d_weights[-1] = d_weights[-1].reshape((self.layer_sizes[0], self.input_dim))
+        d_weights.append(diff_layers[0].T @ x.reshape(1, self.input_dim))
         assert np.shape(d_weights[-1]) == np.shape(self.weights[0])
         d_biases.append(diff_layers[0])
         d_biases[-1] = d_biases[-1].reshape(self.layer_sizes[0])
@@ -112,6 +111,19 @@ class NeuralNetwork:
         for i in range(self.hidden_layers + 1):
             self.weights[i] -= learning_rate_weights[i] * d_weights[i]
             self.biases[i] -= learning_rate_biases[i] * d_biases[i]
+
+    def train(self, inputs, outputs, learning_rate_weights, learning_rate_biases):
+        assert len(learning_rate_weights) == self.hidden_layers + 1 \
+               and len(learning_rate_biases) == self.hidden_layers + 1
+        assert len(inputs) == len(outputs)
+
+        n_d = len(inputs)
+        gradients = [self.gradient(inputs[i], outputs[i]) for i in range(n_d)]
+
+        for i in range(n_d):
+            for j in range(self.hidden_layers + 1):
+                self.weights[j] -= gradients[i][0][j] * learning_rate_weights[j] / n_d
+                self.biases[j] -= gradients[i][1][j] * learning_rate_biases[j] / n_d
 
     def predict_single(self, x):
         assert len(x) == self.input_dim

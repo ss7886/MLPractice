@@ -6,7 +6,7 @@ Implemented so far:
 
 In Progress:
 - [Neural Networks](examples/neural_network_intro.ipynb)
-    - Todo: Training with gradient descent, backpropagation
+    - Todo: Add examples
 
 To do:
 - Linear regression with regularizers
